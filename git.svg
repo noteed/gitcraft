@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg
+  width="676pt" height="493pt"
+  viewBox="0.00 0.00 676.00 493.00"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="git" class="graph"
+  transform="scale(.7386 .7386) rotate(0) translate(4 122.2895)">
+<title>Example Git graph</title>
+<!-- Background-filling rectangle -->
+<polygon
+  fill="#ffffff" stroke="transparent"
+  points="-4,4 -4,-122.2895 775.8627,-122.2895 775.8627,4 -4,4"/>
+
+<!-- Double circle, no idea what it can be -->
+<ellipse fill="#f0f0f0" stroke="none" cx="100" cy="20" rx="15" ry="15"/>
+<ellipse fill="none" stroke="blue" cx="100" cy="20" rx="10" ry="10"/>
+<ellipse fill="none" stroke="blue" cx="100" cy="20" rx="7" ry="7"/>
+
+<!-- master-labeled commit, filled blue because it is selected ? -->
+<ellipse fill="#f0f0f0" stroke="none" cx="100" cy="80" rx="15" ry="15"/>
+<ellipse fill="blue" stroke="blue" cx="100" cy="80" rx="7" ry="7"/>
+<text text-anchor="end" x="80" y="84"
+  font-family="Mono" font-size="14.00" fill="black">master</text>
+
+<!-- Vertical line -->
+<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="32" x2="100" y2="70" />
+<line stroke="blue" x1="100" y1="30" x2="100" y2="73" />
+
+<!-- Commit -->
+<ellipse fill="#f0f0f0" stroke="none" cx="100" cy="140" rx="15" ry="15"/>
+<ellipse fill="none" stroke="blue" cx="100" cy="140" rx="7" ry="7"/>
+<text text-anchor="end" x="80" y="144"
+  font-family="Mono" font-size="14.00" fill="#777">ab01ef23</text>
+
+<!-- Vertical line -->
+<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="88" x2="100" y2="132" />
+<line stroke="blue" x1="100" y1="87" x2="100" y2="133" />
+
+<!-- Commit -->
+<ellipse fill="#f0f0f0" stroke="none" cx="160" cy="20" rx="15" ry="15"/>
+<ellipse fill="none" stroke="blue" cx="160" cy="20" rx="7" ry="7"/>
+
+<!-- Bezier branching from master -->
+<path d="M100,72 Q100,50  130,50         T160,27"
+      fill="none" stroke="blue" />
+<!-- Show Bezier control points
+<path d="M100,72 L100,50 L130,50 L160,50 L160,27"
+      fill="none" stroke="red" />
+-->
+</g>
+</svg>
