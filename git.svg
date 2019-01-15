@@ -16,8 +16,8 @@
 <defs>
   <g id="root-commit"> <!-- Double circle -->
     <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
-    <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="10" ry="10"/>
     <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
+    <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="4" ry="4"/>
   </g>
   <g id="commit">
     <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
@@ -42,7 +42,7 @@
 
 <!-- Vertical line -->
 <line stroke="#f0f0f0" stroke-width="8" x1="100" y1="152" x2="100" y2="190" />
-<line stroke="blue" x1="100" y1="150" x2="100" y2="193" />
+<line stroke="blue" x1="100" y1="147" x2="100" y2="193" />
 
 <!-- Commit -->
 <use xlink:href="#root-commit" x="100" y="260" />
