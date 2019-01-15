@@ -1,18 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg
-  width="800pt" height="500pt"
-  viewBox="0.00 0.00 800.00 500.00"
   xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="git" class="graph"
   transform="scale(1 1) rotate(0) translate(0 0)">
 <title>Example Git graph</title>
-<!-- Background-filling rectangle -->
-<polygon
-  fill="#ffffff" stroke="transparent"
-  points="-4,4 -4,-122.2895 775.8627,-122.2895 775.8627,4 -4,4"/>
-
 <defs>
   <g id="root-commit"> <!-- Double circle -->
     <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
