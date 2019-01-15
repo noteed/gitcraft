@@ -6,7 +6,7 @@
   xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="git" class="graph"
-  transform="scale(1 1) rotate(0) translate(0 120)">
+  transform="scale(1 1) rotate(0) translate(0 0)">
 <title>Example Git graph</title>
 <!-- Background-filling rectangle -->
 <polygon
@@ -14,62 +14,68 @@
   points="-4,4 -4,-122.2895 775.8627,-122.2895 775.8627,4 -4,4"/>
 
 <defs>
+  <g id="root-commit"> <!-- Double circle -->
+    <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
+    <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="10" ry="10"/>
+    <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
+  </g>
   <g id="commit">
     <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
     <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
   </g>
+  <g id="selected-commit"> <!-- Filled blue because -->
+    <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
+    <ellipse fill="blue" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
+  </g>
 </defs>
-<use xlink:href="#commit" x="40" y="40" />
+<use xlink:href="#root-commit" x="40" y="40" />
+<use xlink:href="#commit" x="80" y="40" />
+<use xlink:href="#selected-commit" x="120" y="40" />
 
-<!-- Double circle, no idea what it can be -->
-<ellipse fill="#f0f0f0" stroke="none" cx="100" cy="20" rx="15" ry="15"/>
-<ellipse fill="none" stroke="blue" cx="100" cy="20" rx="10" ry="10"/>
-<ellipse fill="none" stroke="blue" cx="100" cy="20" rx="7" ry="7"/>
+<!-- Commit -->
+<use xlink:href="#commit" x="100" y="140" />
 
-<!-- master-labeled commit, filled blue because it is selected ? -->
-<ellipse fill="#f0f0f0" stroke="none" cx="100" cy="80" rx="15" ry="15"/>
-<ellipse fill="blue" stroke="blue" cx="100" cy="80" rx="7" ry="7"/>
-<text text-anchor="end" x="80" y="84"
+<!-- Commit -->
+<use xlink:href="#selected-commit" x="100" y="200" />
+<text text-anchor="end" x="80" y="204"
   font-family="Mono" font-size="14.00" fill="black">master</text>
 
 <!-- Vertical line -->
-<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="32" x2="100" y2="70" />
-<line stroke="blue" x1="100" y1="30" x2="100" y2="73" />
+<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="152" x2="100" y2="190" />
+<line stroke="blue" x1="100" y1="150" x2="100" y2="193" />
 
 <!-- Commit -->
-<ellipse fill="#f0f0f0" stroke="none" cx="100" cy="140" rx="15" ry="15"/>
-<ellipse fill="none" stroke="blue" cx="100" cy="140" rx="7" ry="7"/>
-<text text-anchor="end" x="80" y="144"
+<use xlink:href="#root-commit" x="100" y="260" />
+<text text-anchor="end" x="80" y="264"
   font-family="Mono" font-size="14.00" fill="#777">ab01ef23</text>
 
 <!-- Vertical line -->
-<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="88" x2="100" y2="132" />
-<line stroke="blue" x1="100" y1="87" x2="100" y2="133" />
+<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="208" x2="100" y2="252" />
+<line stroke="blue" x1="100" y1="207" x2="100" y2="253" />
 
 <!-- Commit -->
-<ellipse fill="#f0f0f0" stroke="none" cx="160" cy="20" rx="15" ry="15"/>
-<ellipse fill="none" stroke="blue" cx="160" cy="20" rx="7" ry="7"/>
+<use xlink:href="#commit" x="160" y="140" />
 
 <!-- Bezier branching from master -->
-<path d="M100,72 Q100,50  130,50         T160,27"
+<path d="M100,192 Q100,170  130,170         T160,147"
       fill="none" stroke="blue" />
 <!-- Show Bezier control points
-<path d="M100,72 L100,50 L130,50 L160,50 L160,27"
+<path d="M100,192 L100,170 L130,170 L160,170 L160,147"
       fill="none" stroke="red" />
 -->
 
-<text text-anchor="middle" x="160" y="-50"
+<text text-anchor="middle" x="160" y="70"
   font-family="Mono" font-size="14.00" fill="#777">develop</text>
-<line stroke="blue" stroke-dasharray="2 2" x1="160" y1="13" x2="160" y2="-30" />
+<line stroke="blue" stroke-dasharray="2 2" x1="160" y1="133" x2="160" y2="90" />
 <polygon
   fill="none" stroke="blue"
-  points="156,-30 164,-30 160,-40"/>
+  points="156,90 164,90 160,80"/>
 
-<text text-anchor="end" x="42" y="218"
+<text text-anchor="end" x="42" y="338"
   font-family="Mono" font-size="10.00" fill="#777">time</text>
-<line stroke="#777" x1="50" y1="222" x2="50" y2="210" />
+<line stroke="#777" x1="50" y1="342" x2="50" y2="330" />
 <polygon
   fill="#777" stroke="none"
-  points="48,212 52,212 50,205"/>
+  points="48,332 52,332 50,325"/>
 </g>
 </svg>
