@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <svg
-  width="676pt" height="493pt"
-  viewBox="0.00 0.00 676.00 493.00"
+  width="800pt" height="500pt"
+  viewBox="0.00 0.00 800.00 500.00"
   xmlns="http://www.w3.org/2000/svg"
   xmlns:xlink="http://www.w3.org/1999/xlink">
 <g id="git" class="graph"
-  transform="scale(.7386 .7386) rotate(0) translate(4 122.2895)">
+  transform="scale(1 1) rotate(0) translate(0 120)">
 <title>Example Git graph</title>
 <!-- Background-filling rectangle -->
 <polygon
