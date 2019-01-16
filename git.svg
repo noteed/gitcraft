@@ -16,11 +16,24 @@
     <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
     <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
   </g>
-  <g id="selected-commit"> <!-- Filled blue because -->
+  <g id="selected-commit"> <!-- Filled blue -->
     <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
     <ellipse fill="blue" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
   </g>
+  <g id="arc"> <!-- Vertical arc -->
+    <line stroke="#f0f0f0" stroke-width="8" x1="0" y1="8" x2="0" y2="52" />
+    <line stroke="blue" x1="0" y1="07" x2="0" y2="53" />
+  </g>
+  <g id="left-arc"> <!-- Bezier arc, going to (bottom) left -->
+    <path d="M-60,52 Q-60,30  -30,30       T0,7"
+          fill="none" stroke="blue" />
+    <!-- Show Bezier control points
+    <path d="M-60,52 L-60,30 L-30,30 L0,30 L0,7"
+          fill="none" stroke="red" />
+    -->
+  </g>
 </defs>
+<!-- HEADER MARKER -->
 <use xlink:href="#root-commit" x="40" y="40" />
 <use xlink:href="#commit" x="80" y="40" />
 <use xlink:href="#selected-commit" x="120" y="40" />
@@ -34,8 +47,7 @@
   font-family="Mono" font-size="14.00" fill="black">master</text>
 
 <!-- Vertical line -->
-<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="152" x2="100" y2="190" />
-<line stroke="blue" x1="100" y1="147" x2="100" y2="193" />
+<use xlink:href="#arc" x="100" y="140" />
 
 <!-- Commit -->
 <use xlink:href="#root-commit" x="100" y="260" />
@@ -43,19 +55,13 @@
   font-family="Mono" font-size="14.00" fill="#777">ab01ef23</text>
 
 <!-- Vertical line -->
-<line stroke="#f0f0f0" stroke-width="8" x1="100" y1="208" x2="100" y2="252" />
-<line stroke="blue" x1="100" y1="207" x2="100" y2="253" />
+<use xlink:href="#arc" x="100" y="200" />
 
 <!-- Commit -->
 <use xlink:href="#commit" x="160" y="140" />
 
 <!-- Bezier branching from master -->
-<path d="M100,192 Q100,170  130,170         T160,147"
-      fill="none" stroke="blue" />
-<!-- Show Bezier control points
-<path d="M100,192 L100,170 L130,170 L160,170 L160,147"
-      fill="none" stroke="red" />
--->
+<use xlink:href="#left-arc" x="160" y="140" />
 
 <text text-anchor="middle" x="160" y="70"
   font-family="Mono" font-size="14.00" fill="#777">develop</text>
@@ -70,5 +76,7 @@
 <polygon
   fill="#777" stroke="none"
   points="48,332 52,332 50,325"/>
+
+<!-- FOOTER MARKER -->
 </g>
 </svg>
