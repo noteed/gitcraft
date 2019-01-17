@@ -75,12 +75,14 @@ renderArcs c cs = unlines (map (renderArc c) cs)
 
 renderArc (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 > x2 = concat
   [ "<path d=\"M" ++ show x2' ++ "," ++ show (y2' - 7)
-  , " A30,30 0 0,1 " ++ show (x2' + 30) ++ "," ++ show (y2' - 30) ++"\""
-  , " style=\"stroke: blue; fill:none;\"/>"
+  , " Q" ++ show x2' ++ "," ++ show (y2' - 30)
+  , " " ++ show (x2' + 30) ++ "," ++ show (y2' -30) ++ "\""
+  , " fill=\"none\" stroke=\"blue\" />"
   , " <line stroke=\"blue\" x1=\"" ++ show (x2' + 30) ++ "\" y1=\"" ++ show (y2' - 30) ++ "\" x2=\"" ++ show (x1' - 30) ++ "\" y2=\"" ++ show (y1' + 30) ++ "\" />"
-  , " <path d=\"M" ++ show (x1' - 30) ++  "," ++ show (y1' + 30)
-  , " A30,30 0 0,0 " ++ show x1' ++ "," ++ show (y1' + 7) ++ "\""
-  , " style=\"stroke: blue; fill:none;\"/>"
+  , " <path d=\"M" ++ show x1' ++  "," ++ show (y1' + 7)
+  , " Q" ++ show x1' ++ "," ++ show (y1' + 30)
+  , " " ++ show (x1' - 30) ++ "," ++ show (y1' + 30) ++ "\""
+  , " fill=\"none\" stroke=\"blue\" />"
   ]
   where
   x1' = 60 * x1 + 40
