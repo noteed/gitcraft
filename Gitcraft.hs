@@ -1,16 +1,25 @@
--- | This script generates an example body for the SVG file. (The body should
--- be preceded by the header and followed by the footer, both marked clearly in
--- the example git.svg file.)
+-- | This script generates an example SVG file. (The beginning and end of the
+-- generated file are copied verbatim from git.svg.)
 module Gitcraft where
 
 
 --------------------------------------------------------------------------------
 main = do
+  template <- readFile "git.svg"
   let commits' = zip commits (findParents commits)
       selection = "00000002"
-  mapM_ (putStrLn . renderCommit selection) commits
-  mapM_ (putStrLn . uncurry renderArcs) commits'
+      header = takeWhile (/= "<!-- HEADER MARKER -->") (lines template)
+      footer = tail (dropWhile (/= "<!-- FOOTER MARKER -->") (lines template))
+      content = unlines (concat
+        [ header
+        , map (renderCommit selection) commits
+        , map (uncurry renderArcs) commits'
+        , footer
+        ])
+  writeFile "example.svg" content
 
+
+--------------------------------------------------------------------------------
 commits =
   [ Commit "00000003" ["00000002"] (1, 0)
   , Commit "00000002" ["00000001"] (1, 1)
