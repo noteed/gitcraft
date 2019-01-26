@@ -15,7 +15,7 @@ main = do
       footer = tail (dropWhile (/= "<!-- FOOTER MARKER -->") (lines template))
       content = unlines (concat
         [ header
-        , ["<text text-anchor=\"start\" x=\"" ++ show 20 ++ "\" y=\"" ++ show 20 ++ "\""
+        , ["<text text-anchor=\"start\" x=\"" ++ show 5 ++ "\" y=\"" ++ show 20 ++ "\""
         , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
         , rName ++ ".git"
         , "</text>"]
@@ -30,20 +30,22 @@ repository :: Repository
 repository = Repository "example" commits selection refs
 
 commits =
-  [ Commit "00000003" ["00000002"] (2, 0)
-  , Commit "00000002" ["00000001"] (1, 1)
-  , Commit "00000001" []           (1, 2)
-
-  , Commit "00000004" ["00000002"] (2, 0)
+  [ Commit "00000003" ["00000002"] (2, 1)
+  , Commit "00000002" ["00000001"] (1, 4)
+  , Commit "00000001" []           (1, 5)
 
   , Commit "00000005" ["00000002"] (3, 0)
 
-  , Commit "00000007" ["00000002"] (0, 0)
+  , Commit "00000007" ["00000002"] (0, 3)
+  , Commit "00000008" ["00000002", "00000007"] (1, 2)
   ]
 
 selection = "00000002"
 
-refs = [("00000003", ["master"])]
+refs =
+  [ ("00000008", ["master"])
+  , ("00000007", ["hotfix"])
+  ]
 
 
 --------------------------------------------------------------------------------
@@ -69,7 +71,7 @@ type Sha1 = String
 
 
 --------------------------------------------------------------------------------
-(marginx, marginy) = (60, 60)
+(marginx, marginy) = (80, 60)
 spacingx = 60
 spacingy = 60
 
