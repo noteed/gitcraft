@@ -3,7 +3,7 @@
 {-# LANGUAGE RecordWildCards #-}
 module Gitcraft where
 
-import qualified Data.Map as M
+import Data.List (intersperse)
 
 
 --------------------------------------------------------------------------------
@@ -19,14 +19,15 @@ main = do
         , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
         , rName ++ ".git"
         , "</text>"]
-        , map (renderCommit rSelection ("00000003", "master")) rCommits
+        , map (renderCommit rSelection rRefs) rCommits
         , map (uncurry renderArcs) commits'
         , footer
         ])
   writeFile "example.svg" content
 
 --------------------------------------------------------------------------------
-repository = Repository "example" commits selection
+repository :: Repository
+repository = Repository "example" commits selection refs
 
 commits =
   [ Commit "00000003" ["00000002"] (2, 0)
@@ -42,12 +43,15 @@ commits =
 
 selection = "00000002"
 
+refs = [("00000003", ["master"])]
+
 
 --------------------------------------------------------------------------------
 data Repository = Repository
   { rName :: String
   , rCommits :: [Commit]
   , rSelection :: Sha1
+  , rRefs :: [(Sha1, [String])]
   }
 
 
@@ -90,15 +94,18 @@ renderCommit selection refs (Commit sha1 ps (x, y)) =
     [] -> "root-commit"
     _ | selection == sha1 -> "selected-commit"
     _ -> "commit"
-  labels = concatMap label (if sha1 == fst refs then [snd refs] else [])
-  label r = concat
+  labels = concatMap label refs
+  label (s, r) | sha1 == s = concat
     [ "<text text-anchor=\"end\" x=\""
     , show (spacingx * x + marginx - 20)
     , "\" y=\""
     , show (spacingy * y + marginy + 4)
     , "\""
-    , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">master</text>"
+    , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
+    , concat (intersperse "," r)
+    , "</text>"
     ]
+  label _ = []
 
 -- | Render arcs from c to cs (normally those are the parents of c).
 renderArcs c cs = unlines (map (renderArc c) cs)
