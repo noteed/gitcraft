@@ -9,24 +9,38 @@ import Data.List (intersperse)
 --------------------------------------------------------------------------------
 main = do
   template <- readFile "git.svg"
-  let Repository{..} = repository
-      Options{..} = options
+  render template example1
+  render template example2
+
+render template (r, o) = do
+  let Repository{..} = r
+      Options{..} = o
       commits' = zip commits (findParents rCommits)
       header = takeWhile (/= "<!-- HEADER MARKER -->") (lines template)
       footer = tail (dropWhile (/= "<!-- FOOTER MARKER -->") (lines template))
       content = unlines (concat $
         [ header
-        , title rName
-        , map (renderCommit repository options) rCommits
-        , map (uncurry (renderArcs options)) commits'
+        , title oName
+        ] ++ map (uncurry (column o)) oColumns ++
+        [ map (renderCommit r o) rCommits
+        , map (uncurry (renderArcs o)) commits'
         ] ++ map note oNotes ++
         [ footer
         ])
-  writeFile "example.svg" content
+  writeFile (oName ++ ".svg") content
+
 
 --------------------------------------------------------------------------------
-repository :: Repository
-repository = Repository "example" commits selection refs
+example1 = (repository1, options1)
+
+example2 = (repository2, options2)
+
+
+--------------------------------------------------------------------------------
+repository1 :: Repository
+repository1 = Repository commits selection refs
+
+repository2 = Repository commits selection []
 
 commits =
   [
@@ -45,7 +59,7 @@ commits =
   , Commit "00000005" ["00000002"] (3, 0)
   ]
 
-selection = "00000003"
+selection = "00000005"
 
 refs =
   [ ("00000007", ["hotfix"])
@@ -54,17 +68,25 @@ refs =
   , ("00000005", ["feature"])
   ]
 
-options :: Options
-options = Options notes 160 60 80 60
+options1 :: Options
+options1 = Options "example-1" notes [] 160 60 80 120
 
 notes =
   [ Note "git checkout -b feature develop" (560, 210)
   ]
 
+options2 = Options "example-2" [] columns 80 60 80 120
+
+columns =
+  [ ("hotfix", 0)
+  , ("master", 1)
+  , ("develop", 2)
+  , ("feature", 3)
+  ]
+
 --------------------------------------------------------------------------------
 data Repository = Repository
-  { rName :: String
-  , rCommits :: [Commit]
+  { rCommits :: [Commit]
   , rSelection :: Sha1
   , rRefs :: [(Sha1, [String])]
   }
@@ -82,7 +104,9 @@ type Sha1 = String
 
 --------------------------------------------------------------------------------
 data Options = Options
-  { oNotes :: [Note]
+  { oName :: String
+  , oNotes :: [Note]
+  , oColumns :: [(String, Int)]
   , oSpacingX :: Int
   , oSpacingY :: Int
   , oMarginX :: Int
@@ -191,5 +215,16 @@ note (Note str (x, y)) =
   , "<text text-anchor=\"middle\" x=\"" ++ show x ++ "\" y=\"" ++ show y ++ "\""
   , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
   , str
+  , "</text>"
+  ]
+
+column Options{..} name x =
+  [ "<line stroke=\"#e0e0e0\" "
+  , " x1=\"" ++ show (oSpacingX * x + oMarginX) ++ "\" y1=\"" ++ show (oMarginY `div` 2 + 5) ++ "\""
+  , " x2=\"" ++ show (oSpacingX * x + oMarginX) ++ "\" y2=\"" ++ show 500 ++ "\""
+  , " stroke-dasharray=\"5\" />"
+  , "<text text-anchor=\"middle\" x=\"" ++ show (oSpacingX * x + oMarginX) ++ "\" y=\"" ++ show (oMarginY `div` 2) ++ "\""
+  , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
+  , name
   , "</text>"
   ]
