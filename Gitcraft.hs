@@ -21,6 +21,12 @@ main = do
         , "</text>"]
         , map (renderCommit rSelection rRefs) rCommits
         , map (uncurry renderArcs) commits'
+        , [ "<rect x=\"422\" y=\"194\" width=\"280\" height=\"22\""
+        ,   "fill=\"#f0f0f0\" fill-opacity=\"0.9\" />" ]
+        , ["<text text-anchor=\"middle\" x=\"" ++ show 560 ++ "\" y=\"" ++ show 210 ++ "\""
+        , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
+        , "git checkout -b feature develop"
+        , "</text>"]
         , footer
         ])
   writeFile "example.svg" content
@@ -80,7 +86,7 @@ type Sha1 = String
 
 --------------------------------------------------------------------------------
 (marginx, marginy) = (80, 60)
-spacingx = 60
+spacingx = 160
 spacingy = 60
 
 --------------------------------------------------------------------------------
