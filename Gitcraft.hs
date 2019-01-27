@@ -46,33 +46,33 @@ repository2 = Repository commits selection []
 commits =
   [
     -- hotfix
-    Commit "00000007" ["00000002"] (0, 3)
+    Commit "d20e93f" ["22ed737"] (0, 3)
       "Fix build."
 
     -- master
-  , Commit "00000008" ["00000002", "00000007"] (1, 2)
+  , Commit "9f52c1e" ["22ed737", "d20e93f"] (1, 2)
       "Merge hotfix in master."
-  , Commit "00000002" ["00000001"] (1, 4)
+  , Commit "22ed737" ["f0e40f6"] (1, 4)
       "Add LICENSE, build file."
-  , Commit "00000001" []           (1, 5)
+  , Commit "f0e40f6" []           (1, 5)
       "Initial commit."
 
     -- develop
-  , Commit "00000003" ["00000002", "00000008"] (2, 1)
+  , Commit "f12efbc" ["22ed737", "9f52c1e"] (2, 1)
       "Merge hotfix in develop (via master)."
 
     -- feature
-  , Commit "00000005" ["00000002"] (3, 0)
+  , Commit "a0a0a50" ["22ed737"] (3, 0)
       "CRFT-0001 Start blue dot feature."
   ]
 
-selection = "00000005"
+selection = "a0a0a50"
 
 refs =
-  [ ("00000007", ["hotfix"])
-  , ("00000008", ["master"])
-  , ("00000003", ["develop"])
-  , ("00000005", ["feature"])
+  [ ("d20e93f", ["hotfix"])
+  , ("9f52c1e", ["master"])
+  , ("f12efbc", ["develop"])
+  , ("a0a0a50", ["feature"])
   ]
 
 options1 :: Options
