@@ -17,8 +17,8 @@ main = do
       content = unlines (concat $
         [ header
         , title rName
-        , map (renderCommit rSelection rRefs) rCommits
-        , map (uncurry renderArcs) commits'
+        , map (renderCommit repository options) rCommits
+        , map (uncurry (renderArcs options)) commits'
         ] ++ map note oNotes ++
         [ footer
         ])
@@ -55,7 +55,7 @@ refs =
   ]
 
 options :: Options
-options = Options notes
+options = Options notes 160 60 80 60
 
 notes =
   [ Note "git checkout -b feature develop" (560, 210)
@@ -83,15 +83,14 @@ type Sha1 = String
 --------------------------------------------------------------------------------
 data Options = Options
   { oNotes :: [Note]
+  , oSpacingX :: Int
+  , oSpacingY :: Int
+  , oMarginX :: Int
+  , oMarginY :: Int
   }
 
 data Note = Note String (Int, Int)
 
-
---------------------------------------------------------------------------------
-(marginx, marginy) = (80, 60)
-spacingx = 160
-spacingy = 60
 
 --------------------------------------------------------------------------------
 
@@ -101,26 +100,17 @@ findParents cs = map f cs
   where
   f (Commit _ ps _) = filter ((`elem` ps) . cId) cs
 
-renderCommit selection refs (Commit sha1 ps (x, y)) =
-  "<use xlink:href=\"#" ++
-  xlink ++
-  "\" x=\"" ++
-  renderx x ++
-  "\" y=\"" ++
-  rendery y ++
-  "\" />" ++ labels
+renderCommit Repository{..} o (Commit sha1 ps (x, y)) =
+  "<use xlink:href=\"#" ++ xlink ++ "\" " ++ renderxy o x y  ++ " />" ++ labels
   where
   xlink = case ps of
     [] -> "root-commit"
-    _ | selection == sha1 -> "selected-commit"
+    _ | rSelection == sha1 -> "selected-commit"
     _ -> "commit"
-  labels = concatMap label refs
+  labels = concatMap label rRefs
   label (s, r) | sha1 == s = concat
-    [ "<text text-anchor=\"end\" x=\""
-    , show (spacingx * x + marginx - 20)
-    , "\" y=\""
-    , show (spacingy * y + marginy + 4)
-    , "\""
+    [ "<text text-anchor=\"end\" "
+    , renderxy' o x y  (-20) 4
     , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
     , concat (intersperse "," r)
     , "</text>"
@@ -128,31 +118,31 @@ renderCommit selection refs (Commit sha1 ps (x, y)) =
   label _ = []
 
 -- | Render arcs from c to cs (normally those are the parents of c).
-renderArcs c cs = unlines (map (renderArc c) cs)
+renderArcs o c cs = unlines (map (renderArc o c) cs)
 
 -- Arc going to upper-right.
-renderArc (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 > x2 = concat
+renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 > x2 = concat
   [ "<path d=\"M" ++ show x2' ++ "," ++ show (y2' - 7)
   , " Q" ++ show x2' ++ "," ++ show (y2' - 30)
   , " " ++ show (x2' + 30) ++ "," ++ show (y2' - 30) ++ "\""
   , " fill=\"none\" stroke=\"blue\" />"
   -- TODO Draw this horizontal part only if it is non-zero.
-  , " <line stroke=\"blue\" x1=\"" ++ show (x2' + 30) ++ "\" y1=\"" ++ show (y2' - 30) ++ "\" x2=\"" ++ show (x1' - 30) ++ "\" y2=\"" ++ show (y2' - spacingy + 30) ++ "\" />"
-  , " <path d=\"M" ++ show x1' ++  "," ++ show (y2' - spacingy + 7)
-  , " Q" ++ show x1' ++ "," ++ show (y2' - spacingy + 30)
-  , " " ++ show (x1' - 30) ++ "," ++ show (y2' - spacingy + 30) ++ "\""
+  , " <line stroke=\"blue\" x1=\"" ++ show (x2' + 30) ++ "\" y1=\"" ++ show (y2' - 30) ++ "\" x2=\"" ++ show (x1' - 30) ++ "\" y2=\"" ++ show (y2' - oSpacingY + 30) ++ "\" />"
+  , " <path d=\"M" ++ show x1' ++  "," ++ show (y2' - oSpacingY + 7)
+  , " Q" ++ show x1' ++ "," ++ show (y2' - oSpacingY + 30)
+  , " " ++ show (x1' - 30) ++ "," ++ show (y2' - oSpacingY + 30) ++ "\""
   , " fill=\"none\" stroke=\"blue\" />"
   -- TODO Draw this vertical part only if it is non-zero.
-  , " <line stroke=\"blue\" x1=\"" ++ show x1' ++ "\" y1=\"" ++ show (y1'+ 7) ++ "\" x2=\"" ++ show x1' ++ "\" y2=\"" ++ show (y2' - spacingy + 7) ++ "\" />"
+  , " <line stroke=\"blue\" x1=\"" ++ show x1' ++ "\" y1=\"" ++ show (y1'+ 7) ++ "\" x2=\"" ++ show x1' ++ "\" y2=\"" ++ show (y2' - oSpacingY + 7) ++ "\" />"
   ]
   where
-  x1' = spacingx * x1 + marginx
-  y1' = spacingy * y1 + marginy
-  x2' = spacingx * x2 + marginx
-  y2' = spacingy * y2 + marginy
+  x1' = oSpacingX * x1 + oMarginX
+  y1' = oSpacingY * y1 + oMarginY
+  x2' = oSpacingX * x2 + oMarginX
+  y2' = oSpacingY * y2 + oMarginY
 
 -- Arc going to upper-left.
-renderArc (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 < x2 = concat
+renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 < x2 = concat
   [ "<path d=\"M" ++ show x2' ++ "," ++ show (y2' - 7)
   , " Q" ++ show x2' ++ "," ++ show (y2' - 30)
   , " " ++ show (x2' - 30) ++ "," ++ show (y2' -30) ++ "\""
@@ -164,22 +154,29 @@ renderArc (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 < x2 = concat
   , " fill=\"none\" stroke=\"blue\" />"
   ]
   where
-  x1' = spacingx * x1 + marginx
-  y1' = spacingy * y1 + marginy
-  x2' = spacingx * x2 + marginx
-  y2' = spacingy * y2 + marginy
+  x1' = oSpacingX * x1 + oMarginX
+  y1' = oSpacingY * y1 + oMarginY
+  x2' = oSpacingX * x2 + oMarginX
+  y2' = oSpacingY * y2 + oMarginY
 
 -- Vertical arc.
-renderArc (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) =
+renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) =
   "<line stroke=\"blue\" x1=\"" ++ show x1' ++ "\" y1=\"" ++ show (y1' + 7) ++ "\" x2=\"" ++ show x2' ++ "\" y2=\"" ++ show (y2' - 7) ++ "\" />"
   where
-  x1' = spacingx * x1 + marginx
-  y1' = spacingy * y1 + marginy
-  x2' = spacingx * x2 + marginx
-  y2' = spacingy * y2 + marginy
+  x1' = oSpacingX * x1 + oMarginX
+  y1' = oSpacingY * y1 + oMarginY
+  x2' = oSpacingX * x2 + oMarginX
+  y2' = oSpacingY * y2 + oMarginY
 
-renderx x = show (spacingx * x + marginx)
-rendery y = show (spacingy * y + marginy)
+renderxy Options{..} x y =
+  "x=\"" ++ show (oSpacingX * x + oMarginX) ++
+  "\" y=\"" ++ show (oSpacingY * y + oMarginY) ++
+  "\""
+
+renderxy' Options{..} x y dx dy =
+  "x=\"" ++ show (oSpacingX * x + oMarginX + dx) ++
+  "\" y=\"" ++ show (oSpacingY * y + oMarginY + dy) ++
+  "\""
 
 title name =
   [ "<text text-anchor=\"start\" x=\"" ++ show 5 ++ "\" y=\"" ++ show 20 ++ "\""
