@@ -25,6 +25,7 @@ render template (r, o) = do
         [ map (renderCommit r o) rCommits
         , map (uncurry (renderArcs o)) commits'
         ] ++ map note oNotes ++
+        (if oCommitLines then map (commitLine o) commits else []) ++
         [ footer
         ])
   writeFile (oName ++ ".svg") content
@@ -46,17 +47,23 @@ commits =
   [
     -- hotfix
     Commit "00000007" ["00000002"] (0, 3)
+      "Fix build."
 
     -- master
   , Commit "00000008" ["00000002", "00000007"] (1, 2)
+      "Merge hotfix in master."
   , Commit "00000002" ["00000001"] (1, 4)
+      "Add LICENSE, build file."
   , Commit "00000001" []           (1, 5)
+      "Initial commit."
 
     -- develop
   , Commit "00000003" ["00000002", "00000008"] (2, 1)
+      "Merge hotfix in develop (via master)."
 
     -- feature
   , Commit "00000005" ["00000002"] (3, 0)
+      "CRFT-0001 Start blue dot feature."
   ]
 
 selection = "00000005"
@@ -69,13 +76,13 @@ refs =
   ]
 
 options1 :: Options
-options1 = Options "example-1" notes [] 160 60 80 120
+options1 = Options "example-1" notes [] 160 60 80 120 False
 
 notes =
-  [ Note "git checkout -b feature develop" (560, 210)
+  [ Note "git checkout -b feature develop" (560, 250)
   ]
 
-options2 = Options "example-2" [] columns 80 60 80 120
+options2 = Options "example-2" [] columns 80 60 30 120 True
 
 columns =
   [ ("hotfix", 0)
@@ -96,6 +103,7 @@ data Commit = Commit
   { cId :: Sha1
   , cParents :: [Sha1]
   , cPosition :: (Int, Int)
+  , cMessage :: String
   }
   deriving Show
 
@@ -111,6 +119,7 @@ data Options = Options
   , oSpacingY :: Int
   , oMarginX :: Int
   , oMarginY :: Int
+  , oCommitLines :: Bool
   }
 
 data Note = Note String (Int, Int)
@@ -122,9 +131,9 @@ data Note = Note String (Int, Int)
 findParents :: [Commit] -> [[Commit]]
 findParents cs = map f cs
   where
-  f (Commit _ ps _) = filter ((`elem` ps) . cId) cs
+  f (Commit _ ps _ _) = filter ((`elem` ps) . cId) cs
 
-renderCommit Repository{..} o (Commit sha1 ps (x, y)) =
+renderCommit Repository{..} o (Commit sha1 ps (x, y) _) =
   "<use xlink:href=\"#" ++ xlink ++ "\" " ++ renderxy o x y  ++ " />" ++ labels
   where
   xlink = case ps of
@@ -145,7 +154,7 @@ renderCommit Repository{..} o (Commit sha1 ps (x, y)) =
 renderArcs o c cs = unlines (map (renderArc o c) cs)
 
 -- Arc going to upper-right.
-renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 > x2 = concat
+renderArc Options{..} (Commit _ _ (x1, y1) _) (Commit _ _ (x2, y2) _) | x1 > x2 = concat
   [ "<path d=\"M" ++ show x2' ++ "," ++ show (y2' - 7)
   , " Q" ++ show x2' ++ "," ++ show (y2' - 30)
   , " " ++ show (x2' + 30) ++ "," ++ show (y2' - 30) ++ "\""
@@ -166,7 +175,7 @@ renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 > x2 = co
   y2' = oSpacingY * y2 + oMarginY
 
 -- Arc going to upper-left.
-renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 < x2 = concat
+renderArc Options{..} (Commit _ _ (x1, y1) _) (Commit _ _ (x2, y2) _) | x1 < x2 = concat
   [ "<path d=\"M" ++ show x2' ++ "," ++ show (y2' - 7)
   , " Q" ++ show x2' ++ "," ++ show (y2' - 30)
   , " " ++ show (x2' - 30) ++ "," ++ show (y2' -30) ++ "\""
@@ -184,7 +193,7 @@ renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) | x1 < x2 = co
   y2' = oSpacingY * y2 + oMarginY
 
 -- Vertical arc.
-renderArc Options{..} (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) =
+renderArc Options{..} (Commit _ _ (x1, y1) _) (Commit _ _ (x2, y2) _) =
   "<line stroke=\"blue\" x1=\"" ++ show x1' ++ "\" y1=\"" ++ show (y1' + 7) ++ "\" x2=\"" ++ show x2' ++ "\" y2=\"" ++ show (y2' - 7) ++ "\" />"
   where
   x1' = oSpacingX * x1 + oMarginX
@@ -210,7 +219,7 @@ title name =
   ]
 
 note (Note str (x, y)) =
-  [ "<rect x=\"422\" y=\"194\" width=\"280\" height=\"22\""
+  [ "<rect x=\"422\" y=\"234\" width=\"280\" height=\"22\""
   , "fill=\"#f0f0f0\" fill-opacity=\"0.9\" />"
   , "<text text-anchor=\"middle\" x=\"" ++ show x ++ "\" y=\"" ++ show y ++ "\""
   , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
@@ -228,3 +237,12 @@ column Options{..} name x =
   , name
   , "</text>"
   ]
+
+line Options{..} name y =
+  [ "<text text-anchor=\"start\" x=\"" ++ show (oSpacingX * 4 + oMarginX - (oSpacingX `div` 2)) ++ "\" y=\"" ++ show (oSpacingY * y + oMarginY + 4) ++ "\""
+  , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
+  , name
+  , "</text>"
+  ]
+
+commitLine o (Commit sha1 ps (_, y) msg) = line o (sha1 ++ " " ++ msg) y
