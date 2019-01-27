@@ -10,24 +10,17 @@ import Data.List (intersperse)
 main = do
   template <- readFile "git.svg"
   let Repository{..} = repository
+      Options{..} = options
       commits' = zip commits (findParents rCommits)
       header = takeWhile (/= "<!-- HEADER MARKER -->") (lines template)
       footer = tail (dropWhile (/= "<!-- FOOTER MARKER -->") (lines template))
-      content = unlines (concat
+      content = unlines (concat $
         [ header
-        , ["<text text-anchor=\"start\" x=\"" ++ show 5 ++ "\" y=\"" ++ show 20 ++ "\""
-        , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
-        , rName ++ ".git"
-        , "</text>"]
+        , title rName
         , map (renderCommit rSelection rRefs) rCommits
         , map (uncurry renderArcs) commits'
-        , [ "<rect x=\"422\" y=\"194\" width=\"280\" height=\"22\""
-        ,   "fill=\"#f0f0f0\" fill-opacity=\"0.9\" />" ]
-        , ["<text text-anchor=\"middle\" x=\"" ++ show 560 ++ "\" y=\"" ++ show 210 ++ "\""
-        , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
-        , "git checkout -b feature develop"
-        , "</text>"]
-        , footer
+        ] ++ map note oNotes ++
+        [ footer
         ])
   writeFile "example.svg" content
 
@@ -61,6 +54,12 @@ refs =
   , ("00000005", ["feature"])
   ]
 
+options :: Options
+options = Options notes
+
+notes =
+  [ Note "git checkout -b feature develop" (560, 210)
+  ]
 
 --------------------------------------------------------------------------------
 data Repository = Repository
@@ -69,9 +68,6 @@ data Repository = Repository
   , rSelection :: Sha1
   , rRefs :: [(Sha1, [String])]
   }
-
-
---------------------------------------------------------------------------------
 
 -- | Commit ID, parent IDs, (x, y) position.
 data Commit = Commit
@@ -82,6 +78,14 @@ data Commit = Commit
   deriving Show
 
 type Sha1 = String
+
+
+--------------------------------------------------------------------------------
+data Options = Options
+  { oNotes :: [Note]
+  }
+
+data Note = Note String (Int, Int)
 
 
 --------------------------------------------------------------------------------
@@ -176,3 +180,19 @@ renderArc (Commit _ _ (x1, y1)) (Commit _ _ (x2, y2)) =
 
 renderx x = show (spacingx * x + marginx)
 rendery y = show (spacingy * y + marginy)
+
+title name =
+  [ "<text text-anchor=\"start\" x=\"" ++ show 5 ++ "\" y=\"" ++ show 20 ++ "\""
+  , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
+  , name ++ ".git"
+  , "</text>"
+  ]
+
+note (Note str (x, y)) =
+  [ "<rect x=\"422\" y=\"194\" width=\"280\" height=\"22\""
+  , "fill=\"#f0f0f0\" fill-opacity=\"0.9\" />"
+  , "<text text-anchor=\"middle\" x=\"" ++ show x ++ "\" y=\"" ++ show y ++ "\""
+  , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
+  , str
+  , "</text>"
+  ]
