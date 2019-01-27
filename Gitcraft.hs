@@ -30,21 +30,29 @@ repository :: Repository
 repository = Repository "example" commits selection refs
 
 commits =
-  [ Commit "00000003" ["00000002"] (2, 1)
+  [
+    -- hotfix
+    Commit "00000007" ["00000002"] (0, 3)
+
+    -- master
+  , Commit "00000008" ["00000002", "00000007"] (1, 2)
   , Commit "00000002" ["00000001"] (1, 4)
   , Commit "00000001" []           (1, 5)
 
-  , Commit "00000005" ["00000002"] (3, 0)
+    -- develop
+  , Commit "00000003" ["00000002", "00000008"] (2, 1)
 
-  , Commit "00000007" ["00000002"] (0, 3)
-  , Commit "00000008" ["00000002", "00000007"] (1, 2)
+    -- feature
+  , Commit "00000005" ["00000002"] (3, 0)
   ]
 
-selection = "00000002"
+selection = "00000003"
 
 refs =
-  [ ("00000008", ["master"])
-  , ("00000007", ["hotfix"])
+  [ ("00000007", ["hotfix"])
+  , ("00000008", ["master"])
+  , ("00000003", ["develop"])
+  , ("00000005", ["feature"])
   ]
 
 
