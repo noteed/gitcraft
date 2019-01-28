@@ -24,7 +24,7 @@ render template (r, o) = do
       content = unlines (concat $
         [ header
         , title oName
-        ] ++ map (uncurry (column o)) oColumns ++
+        ] ++ map (uncurry (column r o)) oColumns ++
         [ map (renderCommit r o) rCommits
         , map (uncurry (renderArcs o)) commits'
         ] ++ map note oNotes ++
@@ -40,18 +40,18 @@ example1 = (repository1, options1)
 example2 = (repository2, options2)
 
 emptyRepository =
-  ( Repository [] [] []
-  , Options "empty" [] [("master*", 1)] 80 60 30 120 True
+  ( Repository "master" [] [] []
+  , Options "empty" [] [("master", 1)] 80 60 30 120 True
   )
 
 initialRepository =
-  ( Repository [commit0] "f0e40f6" []
-  , Options "initial" [] [("master*", 1)] 80 60 30 120 True
+  ( Repository "master" [commit0] "f0e40f6" []
+  , Options "initial" [] [("master", 1)] 80 60 30 120 True
   )
 
 secondRepository =
-  ( Repository [commit0, commit1] "22ed737" []
-  , Options "second" [] [("master*", 1)] 80 60 30 120 True
+  ( Repository "master" [commit0, commit1] "22ed737" []
+  , Options "second" [] [("master", 1)] 80 60 30 120 True
   )
 
 commit0 = Commit "f0e40f6" [] (1, 5)
@@ -63,10 +63,10 @@ commit1 = Commit "22ed737" ["f0e40f6"] (1, 4)
 
 --------------------------------------------------------------------------------
 repository1 :: Repository
-repository1 = Repository commits selection refs
+repository1 = Repository "feature" commits selection refs
 
 repository2 :: Repository
-repository2 = Repository commits selection []
+repository2 = Repository "feature" commits selection []
 
 commits =
   [
@@ -112,13 +112,14 @@ columns =
   [ ("hotfix", 0)
   , ("master", 1)
   , ("develop", 2)
-  , ("feature*", 3)
+  , ("feature", 3)
   ]
 
 
 --------------------------------------------------------------------------------
 data Repository = Repository
-  { rCommits :: [Commit]
+  { rBranch :: String -- ^ Current branch
+  , rCommits :: [Commit]
   , rSelection :: Sha1
   , rRefs :: [(Sha1, [String])]
   }
@@ -252,14 +253,14 @@ note (Note str (x, y)) =
   , "</text>"
   ]
 
-column Options{..} name x =
+column Repository{..} Options{..} name x =
   [ "<line stroke=\"#e0e0e0\" "
   , " x1=\"" ++ show (oSpacingX * x + oMarginX) ++ "\" y1=\"" ++ show (oMarginY `div` 2 + 5) ++ "\""
   , " x2=\"" ++ show (oSpacingX * x + oMarginX) ++ "\" y2=\"" ++ show 500 ++ "\""
   , " stroke-dasharray=\"5\" />"
   , "<text text-anchor=\"middle\" x=\"" ++ show (oSpacingX * x + oMarginX) ++ "\" y=\"" ++ show (oMarginY `div` 2) ++ "\""
   , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
-  , name
+  , name ++ (if name == rBranch then "*" else "")
   , "</text>"
   ]
 
