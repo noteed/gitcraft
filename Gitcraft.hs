@@ -12,6 +12,8 @@ main = do
   render template example1
   render template example2
   render template emptyRepository
+  render template initialRepository
+  render template secondRepository
 
 render template (r, o) = do
   let Repository{..} = r
@@ -39,8 +41,25 @@ example2 = (repository2, options2)
 
 emptyRepository =
   ( Repository [] [] []
-  , Options "empty" [] [("master", 1)] 80 60 30 120 True
+  , Options "empty" [] [("master*", 1)] 80 60 30 120 True
   )
+
+initialRepository =
+  ( Repository [commit0] "f0e40f6" []
+  , Options "initial" [] [("master*", 1)] 80 60 30 120 True
+  )
+
+secondRepository =
+  ( Repository [commit0, commit1] "22ed737" []
+  , Options "second" [] [("master*", 1)] 80 60 30 120 True
+  )
+
+commit0 = Commit "f0e40f6" [] (1, 5)
+  "Initial commit."
+
+commit1 = Commit "22ed737" ["f0e40f6"] (1, 4)
+  "Add LICENSE, build file."
+
 
 --------------------------------------------------------------------------------
 repository1 :: Repository
@@ -58,10 +77,8 @@ commits =
     -- master
   , Commit "9f52c1e" ["22ed737", "d20e93f"] (1, 2)
       "Merge hotfix in master."
-  , Commit "22ed737" ["f0e40f6"] (1, 4)
-      "Add LICENSE, build file."
-  , Commit "f0e40f6" []           (1, 5)
-      "Initial commit."
+  , commit1
+  , commit0
 
     -- develop
   , Commit "f12efbc" ["22ed737", "9f52c1e"] (2, 1)
@@ -95,7 +112,7 @@ columns =
   [ ("hotfix", 0)
   , ("master", 1)
   , ("develop", 2)
-  , ("feature", 3)
+  , ("feature*", 3)
   ]
 
 
