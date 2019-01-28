@@ -11,6 +11,7 @@ main = do
   template <- readFile "git.svg"
   render template example1
   render template example2
+  render template emptyRepository
 
 render template (r, o) = do
   let Repository{..} = r
@@ -36,11 +37,16 @@ example1 = (repository1, options1)
 
 example2 = (repository2, options2)
 
+emptyRepository =
+  ( Repository [] [] []
+  , Options "empty" [] [("master", 1)] 80 60 30 120 True
+  )
 
 --------------------------------------------------------------------------------
 repository1 :: Repository
 repository1 = Repository commits selection refs
 
+repository2 :: Repository
 repository2 = Repository commits selection []
 
 commits =
@@ -82,6 +88,7 @@ notes =
   [ Note "git checkout -b feature develop" (560, 250)
   ]
 
+options2 :: Options
 options2 = Options "example-2" [] columns 80 60 30 120 True
 
 columns =
@@ -90,6 +97,7 @@ columns =
   , ("develop", 2)
   , ("feature", 3)
   ]
+
 
 --------------------------------------------------------------------------------
 data Repository = Repository
