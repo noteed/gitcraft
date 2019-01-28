@@ -15,7 +15,7 @@ main = do
 render template (r, o) = do
   let Repository{..} = r
       Options{..} = o
-      commits' = zip commits (findParents rCommits)
+      commits' = zip rCommits (findParents rCommits)
       header = takeWhile (/= "<!-- HEADER MARKER -->") (lines template)
       footer = tail (dropWhile (/= "<!-- FOOTER MARKER -->") (lines template))
       content = unlines (concat $
@@ -25,7 +25,7 @@ render template (r, o) = do
         [ map (renderCommit r o) rCommits
         , map (uncurry (renderArcs o)) commits'
         ] ++ map note oNotes ++
-        (if oCommitLines then map (commitLine o) commits else []) ++
+        (if oCommitLines then map (commitLine o) rCommits else []) ++
         [ footer
         ])
   writeFile (oName ++ ".svg") content
