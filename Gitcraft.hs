@@ -145,8 +145,8 @@ renderCommit Repository{..} o (Commit sha1 ps (x, y) _) =
   "<use xlink:href=\"#" ++ xlink ++ "\" " ++ renderxy o x y  ++ " />" ++ labels
   where
   xlink = case ps of
-    [] -> "root-commit"
     _ | rSelection == sha1 -> "selected-commit"
+    [] -> "root-commit"
     _ -> "commit"
   labels = concatMap label rRefs
   label (s, r) | sha1 == s = concat
