@@ -75,7 +75,7 @@ script =
 
 checkout :: String -> State Repository ()
 checkout name = do
-  modify (\r -> r { rHead = Ref ("refs/heads/" ++ name), rBranch = name })
+  modify (\r -> r { rHead = Ref ("refs/heads/" ++ name) })
 
 commit :: String -> State Repository ()
 commit msg = do
@@ -106,18 +106,18 @@ example1 = (repository1, options1)
 example2 = (repository2, options2)
 
 emptyRepository =
-  ( Repository "master" [] [] initialHead
+  ( Repository [] [] initialHead
   , Options "empty" [] [("master", 1)] 80 60 30 120 True
   )
 
 initialRepository =
-  ( Repository "master" [commit0]
+  ( Repository [commit0]
       [("refs/heads/master", cId commit0)] initialHead
   , Options "initial" [] [("master", 1)] 80 60 30 120 True
   )
 
 secondRepository =
-  ( Repository "master" [commit0, commit1]
+  ( Repository [commit0, commit1]
       [("refs/heads/master", cId commit1)] initialHead
   , Options "second" [] [("master", 1)] 80 60 30 120 True
   )
@@ -132,16 +132,14 @@ commit1 = sha1Commit (Commit undefined [cId commit0] (1, 4)
 --------------------------------------------------------------------------------
 repository1 :: Repository
 repository1 = Repository
-  { rBranch = "feature"
-  , rCommits = commits
+  { rCommits = commits
   , rRefs = refs
   , rHead = (Ref "refs/heads/feature")
   }
 
 repository2 :: Repository
 repository2 = Repository
-  { rBranch = "feature"
-  , rCommits = commits
+  { rCommits = commits
   , rRefs = refs
   , rHead = (Ref "refs/heads/feature")
   }
@@ -196,8 +194,7 @@ columns =
 
 --------------------------------------------------------------------------------
 data Repository = Repository
-  { rBranch :: String -- ^ Current branch -- TODO Probably redundant with HEAD.
-  , rCommits :: [Commit]
+  { rCommits :: [Commit]
   , rRefs :: [(String, Sha1)]
   , rHead :: Head
   }
@@ -251,7 +248,7 @@ catCommit Commit{..} =
 data Head =
     Ref String -- ^ Points to a branch
   | Detached Sha1 -- ^ Points to a commit
-  deriving Show
+  deriving (Eq, Show)
 
 -- | Equivalent to cat .git/HEAD.
 showHead (Ref r) = "ref: " ++ r
@@ -388,7 +385,7 @@ column Repository{..} Options{..} name x =
   , " stroke-dasharray=\"5\" />"
   , "<text text-anchor=\"middle\" x=\"" ++ show (oSpacingX * x + oMarginX) ++ "\" y=\"" ++ show (oMarginY `div` 2) ++ "\""
   , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
-  , name ++ (if name == rBranch then "*" else "")
+  , name ++ (if Ref ("refs/heads/" ++ name) == rHead then "*" else "")
   , "</text>"
   ]
 
