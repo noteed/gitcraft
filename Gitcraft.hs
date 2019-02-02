@@ -80,11 +80,7 @@ checkout name = do
 commit :: String -> State Repository ()
 commit msg = do
   r@Repository{..} <- get
-  let (parents, mkHead) = case rHead of
-        Ref r -> case lookup r rRefs of
-          Nothing -> ([], const rHead)
-          Just p -> ([p], const rHead)
-        Detached p -> ([p], Detached . cId)
+  let (parents, mkHead) = nextHead r
       c = sha1Commit (Commit "" parents (5, 5) msg)
   put r { rCommits = rCommits ++ [c]
         , rHead = mkHead c
@@ -97,6 +93,12 @@ sha1Commit c =
       sha1 = SHA.showDigest (SHA.sha1 (pack content))
   in  c { cId = sha1 }
 
+-- | Compute the current commit (i.e. parent of next commit) and new head function.
+nextHead Repository{..} = case rHead of
+  Ref r -> case lookup r rRefs of
+    Nothing -> ([], const rHead)
+    Just p -> ([p], const rHead)
+  Detached p -> ([p], Detached . cId)
 
 --------------------------------------------------------------------------------
 example1 = (repository1, options1)
@@ -133,45 +135,45 @@ repository1 = Repository
   { rBranch = "feature"
   , rCommits = commits
   , rRefs = refs
-  , rHead = initialHead
+  , rHead = (Ref "refs/heads/feature")
   }
 
 repository2 :: Repository
 repository2 = Repository
   { rBranch = "feature"
   , rCommits = commits
-  , rRefs = []
-  , rHead = initialHead
+  , rRefs = refs
+  , rHead = (Ref "refs/heads/feature")
   }
 
 commits =
   [
     -- hotfix
-    Commit "d20e93f" ["22ed737"] (0, 3)
+    Commit "d20e93f" ["6a8975717fcc5e312a12041267c66513db13ae66"] (0, 3)
       "Fix build."
 
     -- master
-  , Commit "9f52c1e" ["22ed737", "d20e93f"] (1, 2)
+  , Commit "9f52c1e" ["6a8975717fcc5e312a12041267c66513db13ae66", "d20e93f"] (1, 2)
       "Merge hotfix in master."
   , commit1
   , commit0
 
     -- develop
-  , Commit "f12efbc" ["22ed737", "9f52c1e"] (2, 1)
+  , Commit "f12efbc" ["6a8975717fcc5e312a12041267c66513db13ae66", "9f52c1e"] (2, 1)
       "Merge hotfix in develop (via master)."
 
     -- feature
-  , Commit "a0a0a50" ["22ed737"] (3, 0)
+  , Commit "a0a0a50" ["6a8975717fcc5e312a12041267c66513db13ae66"] (3, 0)
       "CRFT-0001 Start blue dot feature."
   ]
 
 selection = "a0a0a50"
 
 refs =
-  [ ("hotfix", "d20e93f")
-  , ("master", "9f52c1e")
-  , ("develop", "f12efbc")
-  , ("feature", "a0a0a50")
+  [ ("refs/heads/hotfix", "d20e93f")
+  , ("refs/heads/master", "9f52c1e")
+  , ("refs/heads/develop", "f12efbc")
+  , ("refs/heads/feature", "a0a0a50")
   ]
 
 options1 :: Options
@@ -284,19 +286,20 @@ findParents cs = map f cs
   where
   f (Commit _ ps _ _) = filter ((`elem` ps) . cId) cs
 
-renderCommit Repository{..} o (Commit sha1 ps (x, y) _) =
+renderCommit r@Repository{..} o (Commit sha1 ps (x, y) _) =
   "<use xlink:href=\"#" ++ xlink ++ "\" " ++ renderxy o x y  ++ " />" ++ labels
   where
   xlink = case ps of
-    _ | "TODO extract HEAD then refs/heads" == sha1 -> "selected-commit"
+    _ | fst (nextHead r) == [sha1] -> "selected-commit"
     [] -> "root-commit"
     _ -> "commit"
-  labels = concatMap label rRefs
+  -- Display lables only if we don't display columns.
+  labels = if null (oColumns o) then concatMap label rRefs else []
   label (r, s) | sha1 == s = concat
     [ "<text text-anchor=\"end\" "
     , renderxy' o x y  (-20) 4
     , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
-    , r
+    , drop 11 r
     , "</text>"
     ]
   label _ = []
