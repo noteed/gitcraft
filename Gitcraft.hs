@@ -4,6 +4,8 @@
 module Gitcraft where
 
 import Control.Monad.State
+import Data.ByteString.Lazy.Char8 (pack)
+import qualified Data.Digest.Pure.SHA as SHA
 import Data.List (intersperse)
 import System.Environment (getArgs)
 
@@ -81,8 +83,11 @@ commit msg = do
   put r { rCommits = rCommits ++ [c] }
 
 sha1Commit c =
-  let sha1 = "a3982ea2cbca760a303bc1bb77ded7a99d1a4234" -- TODO
+  let content_ = unlines (catCommit c)
+      content = "commit " ++ show (length content_) ++ "\0" ++ content_
+      sha1 = SHA.showDigest (SHA.sha1 (pack content))
   in  c { cId = sha1 }
+
 
 --------------------------------------------------------------------------------
 example1 = (repository1, options1)
@@ -104,11 +109,11 @@ secondRepository =
   , Options "second" [] [("master", 1)] 80 60 30 120 True
   )
 
-commit0 = Commit "a3982ea2cbca760a303bc1bb77ded7a99d1a4234" [] (1, 5)
-  "Initial commit."
+commit0 = sha1Commit (Commit undefined [] (1, 5)
+  "Initial commit.")
 
-commit1 = Commit "22ed737" ["f0e40f6"] (1, 4)
-  "Add LICENSE, build file."
+commit1 = sha1Commit (Commit undefined [cId commit0] (1, 4)
+  "Add LICENSE, build file.")
 
 
 --------------------------------------------------------------------------------
@@ -220,6 +225,15 @@ showCommit Commit{..} =
   , "Date:   Thu Jan 1 00:00:00 1970 +0000"
   , ""
   , "    " ++ cMessage
+  ]
+
+-- | Equivalent to git cat-file commit.
+catCommit Commit{..} =
+  [ "tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904" -- Empty tree SHA1.
+  , "author Your Name <you@example.com> 0 +0000"
+  , "committer Your Name <you@example.com> 0 +0000"
+  , ""
+  , cMessage
   ]
 
 -- | .git/HEAD
