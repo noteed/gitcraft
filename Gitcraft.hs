@@ -21,6 +21,7 @@ main = do
     -- Show the same thing as git-state.sh.
     ["state", "0"] -> renderRepository (fst emptyRepository)
     ["state", "1"] -> renderRepository (fst initialRepository)
+    ["state", "2"] -> renderRepository (fst secondRepository)
     -- Default case, render the images for the slide deck.
     _ -> do
       template <- readFile "git.svg"
@@ -69,6 +70,7 @@ script :: [Op]
 script =
   [ OpCheckout "master"
   , OpCommit "Initial commit."
+  , OpCommit "Add LICENSE, build file."
   ]
 
 checkout :: String -> State Repository ()
@@ -78,9 +80,16 @@ checkout name = do
 commit :: String -> State Repository ()
 commit msg = do
   r@Repository{..} <- get
-  let parents = if null rRefs then [] else ["TODO"]
+  let (parents, mkHead) = case rHead of
+        Ref r -> case lookup r rRefs of
+          Nothing -> ([], const rHead)
+          Just p -> ([p], const rHead)
+        Detached p -> ([p], Detached . cId)
       c = sha1Commit (Commit "" parents (5, 5) msg)
-  put r { rCommits = rCommits ++ [c] }
+  put r { rCommits = rCommits ++ [c]
+        , rHead = mkHead c
+        , rRefs = if null rRefs then [("refs/heads/master", cId c)] else rRefs
+        }
 
 sha1Commit c =
   let content_ = unlines (catCommit c)
@@ -95,17 +104,19 @@ example1 = (repository1, options1)
 example2 = (repository2, options2)
 
 emptyRepository =
-  ( Repository "master" [] [] [] initialHead
+  ( Repository "master" [] [] initialHead
   , Options "empty" [] [("master", 1)] 80 60 30 120 True
   )
 
 initialRepository =
-  ( Repository "master" [commit0] (cId commit0) [("refs/heads/master", cId commit0)] initialHead
+  ( Repository "master" [commit0]
+      [("refs/heads/master", cId commit0)] initialHead
   , Options "initial" [] [("master", 1)] 80 60 30 120 True
   )
 
 secondRepository =
-  ( Repository "master" [commit0, commit1] "22ed737" [] initialHead
+  ( Repository "master" [commit0, commit1]
+      [("refs/heads/master", cId commit1)] initialHead
   , Options "second" [] [("master", 1)] 80 60 30 120 True
   )
 
@@ -121,7 +132,6 @@ repository1 :: Repository
 repository1 = Repository
   { rBranch = "feature"
   , rCommits = commits
-  , rSelection = selection
   , rRefs = refs
   , rHead = initialHead
   }
@@ -130,7 +140,6 @@ repository2 :: Repository
 repository2 = Repository
   { rBranch = "feature"
   , rCommits = commits
-  , rSelection = selection
   , rRefs = []
   , rHead = initialHead
   }
@@ -187,7 +196,6 @@ columns =
 data Repository = Repository
   { rBranch :: String -- ^ Current branch -- TODO Probably redundant with HEAD.
   , rCommits :: [Commit]
-  , rSelection :: Sha1 -- TODO Probably redundant with HEAD.
   , rRefs :: [(String, Sha1)]
   , rHead :: Head
   }
@@ -200,7 +208,7 @@ showRepository Repository{..} =
   showHead rHead :
   concatMap showRef rRefs ++
   map showBranch rRefs ++
-  concatMap showCommit rCommits
+  concat (intersperse [""] (map showCommit (reverse rCommits)))
 
 showRef (r, s) = [ ".git/" ++ r, s ]
 
@@ -230,7 +238,8 @@ showCommit Commit{..} =
 -- | Equivalent to git cat-file commit.
 catCommit Commit{..} =
   [ "tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904" -- Empty tree SHA1.
-  , "author Your Name <you@example.com> 0 +0000"
+  ] ++ map ("parent " ++) cParents ++
+  [ "author Your Name <you@example.com> 0 +0000"
   , "committer Your Name <you@example.com> 0 +0000"
   , ""
   , cMessage
@@ -279,7 +288,7 @@ renderCommit Repository{..} o (Commit sha1 ps (x, y) _) =
   "<use xlink:href=\"#" ++ xlink ++ "\" " ++ renderxy o x y  ++ " />" ++ labels
   where
   xlink = case ps of
-    _ | rSelection == sha1 -> "selected-commit"
+    _ | "TODO extract HEAD then refs/heads" == sha1 -> "selected-commit"
     [] -> "root-commit"
     _ -> "commit"
   labels = concatMap label rRefs
