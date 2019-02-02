@@ -3,17 +3,30 @@
 {-# LANGUAGE RecordWildCards #-}
 module Gitcraft where
 
+import Control.Monad.State
 import Data.List (intersperse)
+import System.Environment (getArgs)
 
 
 --------------------------------------------------------------------------------
 main = do
-  template <- readFile "git.svg"
-  render template example1
-  render template example2
-  render template emptyRepository
-  render template initialRepository
-  render template secondRepository
+  args <- getArgs
+  case args of
+    -- Beginning of State monad -based code, to be replaced by Operational.
+    ["eval"] -> renderRepository (evalState (ops script) (fst emptyRepository))
+    -- Render operations on a reposiory as actual Git commands.
+    ["ops"] -> mapM_ (putStrLn . git) script
+    -- Show the same thing as git-state.sh.
+    ["state", "0"] -> renderRepository (fst emptyRepository)
+    ["state", "1"] -> renderRepository (fst initialRepository)
+    -- Default case, render the images for the slide deck.
+    _ -> do
+      template <- readFile "git.svg"
+      render template example1
+      render template example2
+      render template emptyRepository
+      render template initialRepository
+      render template secondRepository
 
 render template (r, o) = do
   let Repository{..} = r
@@ -35,26 +48,63 @@ render template (r, o) = do
 
 
 --------------------------------------------------------------------------------
+data Op =
+    OpCheckout String
+  | OpCommit String
+
+git op = case op of
+  OpCheckout name -> "git checkout " ++ name
+  OpCommit msg -> "git commit -m'" ++ msg ++ "' --allow-empty"
+
+op (OpCheckout name) = checkout name
+op (OpCommit msg) = commit msg
+
+ops :: [Op] -> State Repository Repository
+ops [] = get
+ops (x:xs) = op x >> ops xs
+
+script :: [Op]
+script =
+  [ OpCheckout "master"
+  , OpCommit "Initial commit."
+  ]
+
+checkout :: String -> State Repository ()
+checkout name = do
+  modify (\r -> r { rHead = Ref ("refs/heads/" ++ name), rBranch = name })
+
+commit :: String -> State Repository ()
+commit msg = do
+  r@Repository{..} <- get
+  let parents = if null rRefs then [] else ["TODO"]
+      c = sha1Commit (Commit "" parents (5, 5) msg)
+  put r { rCommits = rCommits ++ [c] }
+
+sha1Commit c =
+  let sha1 = "73cc77a57ab2923fa1f1c81e8849299670096997" -- TODO
+  in  c { cId = sha1 }
+
+--------------------------------------------------------------------------------
 example1 = (repository1, options1)
 
 example2 = (repository2, options2)
 
 emptyRepository =
-  ( Repository "master" [] [] []
+  ( Repository "master" [] [] [] initialHead
   , Options "empty" [] [("master", 1)] 80 60 30 120 True
   )
 
 initialRepository =
-  ( Repository "master" [commit0] "f0e40f6" []
+  ( Repository "master" [commit0] (cId commit0) [("refs/heads/master", cId commit0)] initialHead
   , Options "initial" [] [("master", 1)] 80 60 30 120 True
   )
 
 secondRepository =
-  ( Repository "master" [commit0, commit1] "22ed737" []
+  ( Repository "master" [commit0, commit1] "22ed737" [] initialHead
   , Options "second" [] [("master", 1)] 80 60 30 120 True
   )
 
-commit0 = Commit "f0e40f6" [] (1, 5)
+commit0 = Commit "73cc77a57ab2923fa1f1c81e8849299670096997" [] (1, 5)
   "Initial commit."
 
 commit1 = Commit "22ed737" ["f0e40f6"] (1, 4)
@@ -63,10 +113,22 @@ commit1 = Commit "22ed737" ["f0e40f6"] (1, 4)
 
 --------------------------------------------------------------------------------
 repository1 :: Repository
-repository1 = Repository "feature" commits selection refs
+repository1 = Repository
+  { rBranch = "feature"
+  , rCommits = commits
+  , rSelection = selection
+  , rRefs = refs
+  , rHead = initialHead
+  }
 
 repository2 :: Repository
-repository2 = Repository "feature" commits selection []
+repository2 = Repository
+  { rBranch = "feature"
+  , rCommits = commits
+  , rSelection = selection
+  , rRefs = []
+  , rHead = initialHead
+  }
 
 commits =
   [
@@ -92,10 +154,10 @@ commits =
 selection = "a0a0a50"
 
 refs =
-  [ ("d20e93f", ["hotfix"])
-  , ("9f52c1e", ["master"])
-  , ("f12efbc", ["develop"])
-  , ("a0a0a50", ["feature"])
+  [ ("hotfix", "d20e93f")
+  , ("master", "9f52c1e")
+  , ("develop", "f12efbc")
+  , ("feature", "a0a0a50")
   ]
 
 options1 :: Options
@@ -118,11 +180,26 @@ columns =
 
 --------------------------------------------------------------------------------
 data Repository = Repository
-  { rBranch :: String -- ^ Current branch
+  { rBranch :: String -- ^ Current branch -- TODO Probably redundant with HEAD.
   , rCommits :: [Commit]
-  , rSelection :: Sha1
-  , rRefs :: [(Sha1, [String])]
+  , rSelection :: Sha1 -- TODO Probably redundant with HEAD.
+  , rRefs :: [(String, Sha1)]
+  , rHead :: Head
   }
+  deriving Show
+
+renderRepository = mapM_ putStrLn . showRepository
+
+-- | The output of this function should be the same as git-state.sh.
+showRepository Repository{..} =
+  showHead rHead :
+  concatMap showRef rRefs ++
+  map showBranch rRefs ++
+  concatMap showCommit rCommits
+
+showRef (r, s) = [ ".git/" ++ r, s ]
+
+showBranch (r, _) = "* " ++ drop 11 r
 
 -- | Commit ID, parent IDs, (x, y) position.
 data Commit = Commit
@@ -132,6 +209,31 @@ data Commit = Commit
   , cMessage :: String
   }
   deriving Show
+
+-- | Equivalent to git log -1.
+-- Such commits can be created with
+--   GIT_COMMITTER_DATE="1970-01-01T00:00:00"
+--   git commit -m'MESSAGE' --allow-empty --date="1970-01-01T00:00:00"
+showCommit Commit{..} =
+  [ "commit " ++ cId
+  , "Author: Your Name <you@example.com>"
+  , "Date:   Thu Jan 1 00:00:00 1970 +0000"
+  , ""
+  , "    " ++ cMessage
+  ]
+
+-- | .git/HEAD
+data Head =
+    Ref String -- ^ Points to a branch
+  | Detached Sha1 -- ^ Points to a commit
+  deriving Show
+
+-- | Equivalent to cat .git/HEAD.
+showHead (Ref r) = "ref: " ++ r
+showHead (Detached sha1) = sha1
+
+-- | The value of .git/HEAD when creating a new repository.
+initialHead = Ref "refs/heads/master"
 
 type Sha1 = String
 
@@ -167,11 +269,11 @@ renderCommit Repository{..} o (Commit sha1 ps (x, y) _) =
     [] -> "root-commit"
     _ -> "commit"
   labels = concatMap label rRefs
-  label (s, r) | sha1 == s = concat
+  label (r, s) | sha1 == s = concat
     [ "<text text-anchor=\"end\" "
     , renderxy' o x y  (-20) 4
     , " font-family=\"Mono\" font-size=\"14.00\" fill=\"black\">"
-    , concat (intersperse "," r)
+    , r
     , "</text>"
     ]
   label _ = []
@@ -271,4 +373,4 @@ line Options{..} name y =
   , "</text>"
   ]
 
-commitLine o (Commit sha1 ps (_, y) msg) = line o (sha1 ++ " " ++ msg) y
+commitLine o (Commit sha1 ps (_, y) msg) = line o (take 7 sha1 ++ " " ++ msg) y
