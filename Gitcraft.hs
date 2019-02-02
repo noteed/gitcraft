@@ -81,7 +81,7 @@ commit msg = do
   put r { rCommits = rCommits ++ [c] }
 
 sha1Commit c =
-  let sha1 = "73cc77a57ab2923fa1f1c81e8849299670096997" -- TODO
+  let sha1 = "a3982ea2cbca760a303bc1bb77ded7a99d1a4234" -- TODO
   in  c { cId = sha1 }
 
 --------------------------------------------------------------------------------
@@ -104,7 +104,7 @@ secondRepository =
   , Options "second" [] [("master", 1)] 80 60 30 120 True
   )
 
-commit0 = Commit "73cc77a57ab2923fa1f1c81e8849299670096997" [] (1, 5)
+commit0 = Commit "a3982ea2cbca760a303bc1bb77ded7a99d1a4234" [] (1, 5)
   "Initial commit."
 
 commit1 = Commit "22ed737" ["f0e40f6"] (1, 4)
