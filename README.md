@@ -3,7 +3,7 @@
 Features (more or less):
 
 - Render hard-coded example repositories to SVG (the default when running
-  Gitcraft.hs).
+  `Gitcraft.hs`).
 - Render hard-coded example repositories to text to compare their structure to
   actual Git repositories. Actual Git repositories can be rendered in a similar
   way with the `git-state.sh` script.
@@ -11,3 +11,4 @@ Features (more or less):
   repositories. This should use Operational instead to have multiple
   interpretations of commands (construct the in-memory repository, output actual
   Git commands, ...).
+- Provide a test script called `compare.sh`.
