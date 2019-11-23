@@ -47,7 +47,7 @@ render template (r, o) = do
         (if oCommitLines then map (commitLine o) rCommits else []) ++
         [ footer
         ])
-  writeFile (oName ++ ".svg") content
+  writeFile ("docs/images/" ++ oName ++ ".svg") content
 
 
 --------------------------------------------------------------------------------

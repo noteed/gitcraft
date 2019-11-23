@@ -1,0 +1,50 @@
+html {
+  --unit: 0.25rem;
+  overflow-y: scroll;
+}
+
+.ibm-plex-sans {
+  font-family: "IBM Plex Sans", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+@import url("/inter.css");
+@supports (font-variation-settings: normal) {
+  .inter {
+    font-family: "Inter var", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+.inter {
+  font-family: "Inter", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+hr {
+  border: 0px;
+  margin: calc(var(--unit) * 8) 0;
+  width: calc(var(--unit) * 32);
+  height: 2px;
+  background-color: black;
+}
+a {
+  color: blue;
+  text-decoration: none;
+}
+.main-mw {
+  max-width: calc(var(--unit) * 320);
+}
+.poster ul.ep-nav a {
+  opacity: 0.10;
+}
+.poster ul.ep-nav a:hover {
+  opacity: 1.00;
+}
+
+/* now pre code blocks allow for 80 columns + the scroll bar
+ * in my half-screen browser window...
+ * But it messes up with unicode box drawing characters...
+ */
+code {
+  font-size: 0.85em;
+}

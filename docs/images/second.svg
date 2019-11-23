@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg
+  viewBox="0 0 700 500"
+  xmlns="http://www.w3.org/2000/svg"
+  xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="git" class="graph"
+  transform="scale(1 1) rotate(0) translate(0 0)">
+<title>Example Git graph</title>
+<defs>
+  <g id="root-commit"> <!-- Double circle -->
+    <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
+    <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
+    <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="4" ry="4"/>
+  </g>
+  <g id="commit">
+    <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
+    <ellipse fill="none" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
+  </g>
+  <g id="selected-commit"> <!-- Filled blue -->
+    <ellipse fill="#f0f0f0" stroke="none" cx="0" cy="0" rx="15" ry="15"/>
+    <ellipse fill="blue" stroke="blue" cx="0" cy="0" rx="7" ry="7"/>
+  </g>
+  <g id="arc"> <!-- Vertical arc -->
+    <line stroke="#f0f0f0" stroke-width="8" x1="0" y1="8" x2="0" y2="52" />
+    <line stroke="blue" x1="0" y1="07" x2="0" y2="53" />
+  </g>
+  <g id="left-arc"> <!-- Bezier arc, going to (bottom) left -->
+    <path d="M-60,52 Q-60,30  -30,30       T0,7"
+          fill="none" stroke="blue" />
+    <!-- Show Bezier control points
+    <path d="M-60,52 L-60,30 L-30,30 L0,30 L0,7"
+          fill="none" stroke="red" />
+    -->
+  </g>
+</defs>
+<text text-anchor="start" x="5" y="20"
+ font-family="Mono" font-size="14.00" fill="black">
+second.git
+</text>
+<line stroke="#e0e0e0" 
+ x1="110" y1="65"
+ x2="110" y2="500"
+ stroke-dasharray="5" />
+<text text-anchor="middle" x="110" y="60"
+ font-family="Mono" font-size="14.00" fill="black">
+master*
+</text>
+<use xlink:href="#root-commit" x="110" y="420" />
+<use xlink:href="#selected-commit" x="110" y="360" />
+
+<line stroke="blue" x1="110" y1="367" x2="110" y2="413" />
+
+<text text-anchor="start" x="310" y="424"
+ font-family="Mono" font-size="14.00" fill="black">
+a3982ea Initial commit.
+</text>
+<text text-anchor="start" x="310" y="364"
+ font-family="Mono" font-size="14.00" fill="black">
+6a89757 Add LICENSE, build file.
+</text>
+</g>
+</svg>
