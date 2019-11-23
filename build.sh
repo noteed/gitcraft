@@ -15,7 +15,7 @@ nix-shell -p pkgs.haskellPackages.pandoc --run "pandoc \
   $i.md"
 
   # TODO noteed.com should have all these files already.
-  sed -i -e 's@/static/@./static/@' docs/$i.html
+  sed -i -e 's@/static/@./static/@g' docs/$i.html
 done
 
 cp ../design-system/static/css/styles.css docs/static/css/
