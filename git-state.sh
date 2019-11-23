@@ -3,6 +3,9 @@
 # This script shows some parts of the .git directory together with the output
 # of some Git commands (e.g. `log`). This is useful to compare with the state
 # managed by Gitcraft.hs as operations are applied.
+#
+# It is called by compare.sh, which sets the TMP_DIR environment variable used
+# below.
 
 set -e
 

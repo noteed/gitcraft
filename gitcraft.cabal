@@ -1,0 +1,23 @@
+name:                gitcraft
+version:             0.0.1
+Cabal-Version:       >= 1.8
+synopsis:            Craft Git commit diagrams.
+description:         Craft Git commit diagrams.
+category:            Development
+license:             BSD2
+license-file:        LICENSE
+author:              Vo Minh Thu
+maintainer:          thu@hypered.io
+homepage:            http://noteed.com/gitcraft
+bug-reports:         https://github.com/noteed/gitcraft/issues
+build-type:          Simple
+
+library
+  build-depends: 
+    base == 4.*,
+    mtl,
+    SHA
+  exposed-modules:
+    Gitcraft
+  ghc-options:
+    -Wall
