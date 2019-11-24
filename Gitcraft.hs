@@ -16,7 +16,7 @@ main = do
   case args of
     -- Beginning of State monad -based code, to be replaced by Operational.
     ["eval"] -> renderRepository (evalState (ops script) (fst emptyRepository))
-    -- Render operations on a reposiory as actual Git commands.
+    -- Render operations on a repository as actual Git commands.
     ["ops"] -> mapM_ (putStrLn . git) script
     -- Show the same thing as git-state.sh.
     ["state", "0"] -> renderRepository (fst emptyRepository)
@@ -54,7 +54,7 @@ showRef (r, s) = [ ".git/" ++ r, s ]
 
 showBranch (r, _) = "* " ++ drop 11 r
 
--- | Commit ID, parent IDs, (x, y) position.
+-- | Commit ID, parent IDs, (x, y) position, commit message.
 data Commit = Commit
   { cId :: Sha1
   , cParents :: [Sha1]
@@ -131,20 +131,28 @@ ops :: [Op] -> State Repository Repository
 ops [] = get
 ops (x:xs) = op x >> ops xs
 
+-- | Run a checkout operation, i.e. sets HEAD to the given branch name.
+-- TODO Make it work other refs.
 checkout :: String -> State Repository ()
 checkout name = do
   modify (\r -> r { rHead = Ref ("refs/heads/" ++ name) })
 
+-- | Run a commit operation:
+-- - Create a new commit, using the current HEAD as its parent.
+-- - Advance HEAD to the new commit
+-- - If it is the first commit, sets the default branch (master) to the new
+--   commit.
 commit :: String -> State Repository ()
 commit msg = do
   r@Repository{..} <- get
   let (parents, mkHead) = nextHead r
-      c = sha1Commit (Commit "" parents (5, 5) msg)
+      c = sha1Commit (Commit undefined parents (5, 5) msg)
   put r { rCommits = rCommits ++ [c]
         , rHead = mkHead c
         , rRefs = if null rRefs then [("refs/heads/master", cId c)] else rRefs
         }
 
+-- | Compute the SHA1 of a commit and returns the commit augmented with it.
 sha1Commit c =
   let content_ = unlines (catCommit c)
       content = "commit " ++ show (length content_) ++ "\0" ++ content_
