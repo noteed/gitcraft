@@ -31,23 +31,80 @@ main = do
       render template example1
       render template example2
 
-render template (r, o) = do
-  let Repository{..} = r
-      Options{..} = o
-      commits' = zip rCommits (findParents rCommits)
-      header = takeWhile (/= "<!-- HEADER MARKER -->") (lines template)
-      footer = tail (dropWhile (/= "<!-- FOOTER MARKER -->") (lines template))
-      content = unlines (concat $
-        [ header
-        , title oName
-        ] ++ map (uncurry (column r o)) oColumns ++
-        [ map (renderCommit r o) rCommits
-        , map (uncurry (renderArcs o)) commits'
-        ] ++ map note oNotes ++
-        (if oCommitLines then map (commitLine o) rCommits else []) ++
-        [ footer
-        ])
-  writeFile ("docs/images/" ++ oName ++ ".svg") content
+
+--------------------------------------------------------------------------------
+-- | Git repository
+data Repository = Repository
+  { rCommits :: [Commit]
+  , rRefs :: [(String, Sha1)]
+  , rHead :: Head
+  }
+  deriving Show
+
+renderRepository = mapM_ putStrLn . showRepository
+
+-- | The output of this function should be the same as git-state.sh.
+showRepository Repository{..} =
+  showHead rHead :
+  concatMap showRef rRefs ++
+  map showBranch rRefs ++
+  concat (intersperse [""] (map showCommit (reverse rCommits)))
+
+showRef (r, s) = [ ".git/" ++ r, s ]
+
+showBranch (r, _) = "* " ++ drop 11 r
+
+-- | Commit ID, parent IDs, (x, y) position.
+data Commit = Commit
+  { cId :: Sha1
+  , cParents :: [Sha1]
+  , cPosition :: (Int, Int)
+  , cMessage :: String
+  }
+  deriving Show
+
+-- | Equivalent to git log -1.
+-- Such commits can be created with
+--   GIT_COMMITTER_DATE="1970-01-01T00:00:00"
+--   git commit -m'MESSAGE' --allow-empty --date="1970-01-01T00:00:00"
+showCommit Commit{..} =
+  [ "commit " ++ cId
+  , "Author: Your Name <you@example.com>"
+  , "Date:   Thu Jan 1 00:00:00 1970 +0000"
+  , ""
+  , "    " ++ cMessage
+  ]
+
+-- | Equivalent to git cat-file commit.
+catCommit Commit{..} =
+  [ "tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904" -- Empty tree SHA1.
+  ] ++ map ("parent " ++) cParents ++
+  [ "author Your Name <you@example.com> 0 +0000"
+  , "committer Your Name <you@example.com> 0 +0000"
+  , ""
+  , cMessage
+  ]
+
+-- | Map each commit to a list of its parents.
+findParents :: [Commit] -> [[Commit]]
+findParents cs = map f cs
+  where
+  f (Commit _ ps _ _) = filter ((`elem` ps) . cId) cs
+
+-- | .git/HEAD
+data Head =
+    Ref String -- ^ Points to a branch
+  | Detached Sha1 -- ^ Points to a commit
+  deriving (Eq, Show)
+
+-- | Equivalent to cat .git/HEAD.
+showHead (Ref r) = "ref: " ++ r
+showHead (Detached sha1) = sha1
+
+-- | The value of .git/HEAD when creating a new repository.
+initialHead = Ref "refs/heads/master"
+
+type Sha1 = String
 
 
 --------------------------------------------------------------------------------
@@ -101,7 +158,13 @@ nextHead Repository{..} = case rHead of
     Just p -> ([p], const rHead)
   Detached p -> ([p], Detached . cId)
 
+
 --------------------------------------------------------------------------------
+-- Examples
+--------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+-- | Example script
 script :: [Op]
 script =
   [ OpCheckout "master"
@@ -138,6 +201,7 @@ commit1 = sha1Commit (Commit undefined [cId commit0] (1, 4)
 
 
 --------------------------------------------------------------------------------
+-- | Example repository
 repository1 :: Repository
 repository1 = Repository
   { rCommits = commits
@@ -145,6 +209,7 @@ repository1 = Repository
   , rHead = (Ref "refs/heads/feature")
   }
 
+-- | Example repository
 repository2 :: Repository
 repository2 = Repository
   { rCommits = commits
@@ -201,72 +266,8 @@ columns =
 
 
 --------------------------------------------------------------------------------
-data Repository = Repository
-  { rCommits :: [Commit]
-  , rRefs :: [(String, Sha1)]
-  , rHead :: Head
-  }
-  deriving Show
-
-renderRepository = mapM_ putStrLn . showRepository
-
--- | The output of this function should be the same as git-state.sh.
-showRepository Repository{..} =
-  showHead rHead :
-  concatMap showRef rRefs ++
-  map showBranch rRefs ++
-  concat (intersperse [""] (map showCommit (reverse rCommits)))
-
-showRef (r, s) = [ ".git/" ++ r, s ]
-
-showBranch (r, _) = "* " ++ drop 11 r
-
--- | Commit ID, parent IDs, (x, y) position.
-data Commit = Commit
-  { cId :: Sha1
-  , cParents :: [Sha1]
-  , cPosition :: (Int, Int)
-  , cMessage :: String
-  }
-  deriving Show
-
--- | Equivalent to git log -1.
--- Such commits can be created with
---   GIT_COMMITTER_DATE="1970-01-01T00:00:00"
---   git commit -m'MESSAGE' --allow-empty --date="1970-01-01T00:00:00"
-showCommit Commit{..} =
-  [ "commit " ++ cId
-  , "Author: Your Name <you@example.com>"
-  , "Date:   Thu Jan 1 00:00:00 1970 +0000"
-  , ""
-  , "    " ++ cMessage
-  ]
-
--- | Equivalent to git cat-file commit.
-catCommit Commit{..} =
-  [ "tree 4b825dc642cb6eb9a060e54bf8d69288fbee4904" -- Empty tree SHA1.
-  ] ++ map ("parent " ++) cParents ++
-  [ "author Your Name <you@example.com> 0 +0000"
-  , "committer Your Name <you@example.com> 0 +0000"
-  , ""
-  , cMessage
-  ]
-
--- | .git/HEAD
-data Head =
-    Ref String -- ^ Points to a branch
-  | Detached Sha1 -- ^ Points to a commit
-  deriving (Eq, Show)
-
--- | Equivalent to cat .git/HEAD.
-showHead (Ref r) = "ref: " ++ r
-showHead (Detached sha1) = sha1
-
--- | The value of .git/HEAD when creating a new repository.
-initialHead = Ref "refs/heads/master"
-
-type Sha1 = String
-
+-- Rendering code
+--------------------------------------------------------------------------------
 
 --------------------------------------------------------------------------------
 -- | Rendering options.
@@ -286,12 +287,23 @@ data Note = Note String (Int, Int)
 
 
 --------------------------------------------------------------------------------
-
--- | Map each commit to a list of its parents.
-findParents :: [Commit] -> [[Commit]]
-findParents cs = map f cs
-  where
-  f (Commit _ ps _ _) = filter ((`elem` ps) . cId) cs
+render template (r, o) = do
+  let Repository{..} = r
+      Options{..} = o
+      commits' = zip rCommits (findParents rCommits)
+      header = takeWhile (/= "<!-- HEADER MARKER -->") (lines template)
+      footer = tail (dropWhile (/= "<!-- FOOTER MARKER -->") (lines template))
+      content = unlines (concat $
+        [ header
+        , title oName
+        ] ++ map (uncurry (column r o)) oColumns ++
+        [ map (renderCommit r o) rCommits
+        , map (uncurry (renderArcs o)) commits'
+        ] ++ map note oNotes ++
+        (if oCommitLines then map (commitLine o) rCommits else []) ++
+        [ footer
+        ])
+  writeFile ("docs/images/" ++ oName ++ ".svg") content
 
 renderCommit r@Repository{..} o (Commit sha1 ps (x, y) _) =
   "<use xlink:href=\"#" ++ xlink ++ "\" " ++ renderxy o x y  ++ " />" ++ labels
