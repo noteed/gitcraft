@@ -26,7 +26,7 @@ and is linked to the current commit.
 The example graph below shows an example of Git flow, where a hotfix branch is
 already merged. Some Git flow variant would merge the hotfix in `develop`
 directly. Here it is merged indirectly, by merging `master` in `develop`. There
-is also a feature branch, started at the same time as the hotfox, and not yet
+is also a feature branch, started at the same time as the hotfix, and not yet
 merged.
 
 ![](images/example-1.svg)
