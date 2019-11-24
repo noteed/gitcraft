@@ -51,27 +51,28 @@ render template (r, o) = do
 
 
 --------------------------------------------------------------------------------
+-- | Git operations
 data Op =
     OpCheckout String
+    -- ^ Checkout a branch.
   | OpCommit String
+    -- ^ Create an empty commit with the given message.
 
+-- | Convert a Git operation to its command-line invocation.
+git :: Op -> String
 git op = case op of
   OpCheckout name -> "git checkout " ++ name
   OpCommit msg -> "git commit -m'" ++ msg ++ "' --allow-empty"
 
+-- | Run a Git operation in the state monad.
+op :: Op -> State Repository ()
 op (OpCheckout name) = checkout name
 op (OpCommit msg) = commit msg
 
+-- | Run a list of Git operations in the state monad.
 ops :: [Op] -> State Repository Repository
 ops [] = get
 ops (x:xs) = op x >> ops xs
-
-script :: [Op]
-script =
-  [ OpCheckout "master"
-  , OpCommit "Initial commit."
-  , OpCommit "Add LICENSE, build file."
-  ]
 
 checkout :: String -> State Repository ()
 checkout name = do
@@ -101,9 +102,12 @@ nextHead Repository{..} = case rHead of
   Detached p -> ([p], Detached . cId)
 
 --------------------------------------------------------------------------------
-example1 = (repository1, options1)
-
-example2 = (repository2, options2)
+script :: [Op]
+script =
+  [ OpCheckout "master"
+  , OpCommit "Initial commit."
+  , OpCommit "Add LICENSE, build file."
+  ]
 
 emptyRepository =
   ( Repository [] [] initialHead
@@ -121,6 +125,10 @@ secondRepository =
       [("refs/heads/master", cId commit1)] initialHead
   , Options "second" [] [("master", 1)] 80 60 30 120 True
   )
+
+example1 = (repository1, options1)
+
+example2 = (repository2, options2)
 
 commit0 = sha1Commit (Commit undefined [] (1, 5)
   "Initial commit.")
@@ -261,6 +269,7 @@ type Sha1 = String
 
 
 --------------------------------------------------------------------------------
+-- | Rendering options.
 data Options = Options
   { oName :: String
   , oNotes :: [Note]
@@ -272,6 +281,7 @@ data Options = Options
   , oCommitLines :: Bool
   }
 
+-- | Place a String at some position (x, y).
 data Note = Note String (Int, Int)
 
 
