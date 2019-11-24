@@ -1,5 +1,5 @@
 -- | This script generates an example SVG file. (The beginning and end of the
--- generated file are copied verbatim from git.svg.)
+-- generated file are copied verbatim from gitcraft.svg.)
 {-# LANGUAGE RecordWildCards #-}
 module Gitcraft where
 
@@ -24,7 +24,7 @@ main = do
     ["state", "2"] -> renderRepository (fst secondRepository)
     -- Default case, render the images for the slide deck.
     _ -> do
-      template <- readFile "git.svg"
+      template <- readFile "gitcraft.svg"
       render template emptyRepository
       render template initialRepository
       render template secondRepository
