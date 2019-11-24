@@ -25,11 +25,11 @@ main = do
     -- Default case, render the images for the slide deck.
     _ -> do
       template <- readFile "git.svg"
-      render template example1
-      render template example2
       render template emptyRepository
       render template initialRepository
       render template secondRepository
+      render template example1
+      render template example2
 
 render template (r, o) = do
   let Repository{..} = r
