@@ -9,7 +9,7 @@ for i in \
   echo Rendering $i.md...
 nix-shell -p pkgs.haskellPackages.pandoc --run "pandoc \
   --standalone \
-  --template ../design-system/generated/templates/default.html \
+  --template ../design-system/pandoc/default.html \
   --lua-filter ../design-system/pandoc/tachyons.lua \
   --output docs/$i.html \
   $i.md"
