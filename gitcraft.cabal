@@ -12,12 +12,13 @@ homepage:            http://noteed.com/gitcraft
 bug-reports:         https://github.com/noteed/gitcraft/issues
 build-type:          Simple
 
-library
-  build-depends: 
+executable gitcraft
+  hs-source-dirs: ./
+  main-is:        Gitcraft.hs
+  build-depends:
     base == 4.*,
+    bytestring,
     mtl,
     SHA
-  exposed-modules:
-    Gitcraft
   ghc-options:
     -Wall

@@ -1,7 +1,7 @@
 -- | This script generates an example SVG file. (The beginning and end of the
 -- generated file are copied verbatim from gitcraft.svg.)
 {-# LANGUAGE RecordWildCards #-}
-module Gitcraft where
+module Main where
 
 import Control.Monad.State
 import Data.ByteString.Lazy.Char8 (pack)
