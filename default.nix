@@ -11,7 +11,7 @@ let
   };
   inherit (import design-system {}) to-html;
 
-  callPackage = pkgs.lib.callPackageWith pkgs.haskell.packages.ghc865;
+  callPackage = pkgs.lib.callPackageWith pkgs.haskell.packages.ghc884;
   f = import ./derivation.nix;
 
 in
@@ -28,5 +28,5 @@ rec {
     mv docs/images $out/
   '';
 
-  gitcraft = callPackage f { stdenv = pkgs.stdenv; };
+  gitcraft = callPackage f { lib = pkgs.lib; };
 }
